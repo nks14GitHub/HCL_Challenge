@@ -42,30 +42,32 @@ public class AccountsRepositoryInMemory implements AccountsRepository {
 	@Override
 	public int fundTransferRequest(MoneyTransferRequest fundTransfer) {
 		
-		
-		if(!accounts.containsKey(fundTransfer.getFromAccountId())||!accounts.containsKey(fundTransfer.getToAccountId())) {
-			throw new FundTransferException("either of  the account doesnot exists");
+		synchronized (this) {
+			if(!accounts.containsKey(fundTransfer.getFromAccountId())||!accounts.containsKey(fundTransfer.getToAccountId())) {
+				throw new FundTransferException("To/From account doesnot exists");
+			}
+			
+			if(accounts.get(fundTransfer.getFromAccountId()).getBalance().compareTo(fundTransfer.getAmount())==-1) {
+				throw new FundTransferException(
+						"Account id " + fundTransfer.getFromAccountId() + " Has insufficient funds for transfer");
+			}
+			
+			Account fromAccount=accounts.get(fundTransfer.getFromAccountId());
+			Account toAccount=accounts.get(fundTransfer.getToAccountId());
+			
+			fromAccount.setBalance(fromAccount.getBalance().subtract(fundTransfer.getAmount()));
+			accounts.put(fundTransfer.getFromAccountId(),fromAccount);
+			
+			notifyCustomer.notifyAboutTransfer(fromAccount, "Amount :"+fundTransfer.getAmount()+ " debited from your account");
+			
+			toAccount.setBalance(toAccount.getBalance().add(fundTransfer.getAmount()));
+			accounts.put(fundTransfer.getToAccountId(),toAccount);
+			
+			notifyCustomer.notifyAboutTransfer(toAccount, "Amount :"+fundTransfer.getAmount()+ " credited to your account");
+			
+			return 1;
 		}
 		
-		if(accounts.get(fundTransfer.getFromAccountId()).getBalance().compareTo(fundTransfer.getAmount())==-1) {
-			throw new FundTransferException(
-					"Account id " + fundTransfer.getFromAccountId() + " Has insufficient funds for transfer");
-		}
-		
-		Account fromAccount=accounts.get(fundTransfer.getFromAccountId());
-		Account toAccount=accounts.get(fundTransfer.getToAccountId());
-		
-		fromAccount.setBalance(fromAccount.getBalance().subtract(fundTransfer.getAmount()));
-		accounts.put(fundTransfer.getFromAccountId(),fromAccount);
-		
-		notifyCustomer.notifyAboutTransfer(fromAccount, "Amount :"+fundTransfer.getAmount()+ " debited from your account");
-		
-		toAccount.setBalance(toAccount.getBalance().add(fundTransfer.getAmount()));
-		accounts.put(fundTransfer.getToAccountId(),toAccount);
-		
-		notifyCustomer.notifyAboutTransfer(toAccount, "Amount :"+fundTransfer.getAmount()+ " credited to your account");
-		
-		return 1;
 		
 	}
 

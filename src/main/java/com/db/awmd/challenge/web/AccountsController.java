@@ -50,17 +50,6 @@ public class AccountsController {
     return this.accountsService.getAccount(accountId);
   }
   
-  @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> accountTransfer(@RequestBody @Valid MoneyTransferRequest fundTransfer) {
-    log.info("initiating FundTransfer.....");
-
-    try {
-    this.accountsService.fundTransferRequest(fundTransfer);
-    } catch (FundTransferException daie) {
-      return new ResponseEntity<>(daie.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    return new ResponseEntity<>(HttpStatus.OK);
-  }
+  
 
 }

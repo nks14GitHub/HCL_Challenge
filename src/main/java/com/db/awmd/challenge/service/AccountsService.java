@@ -26,7 +26,4 @@ public class AccountsService {
     return this.accountsRepository.getAccount(accountId);
   }
   
-  public int fundTransferRequest(MoneyTransferRequest fundTransfer) {
-	    return this.accountsRepository.fundTransferRequest(fundTransfer);
-	  }
 }
